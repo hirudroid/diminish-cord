@@ -48,4 +48,4 @@ async def on_ready():
     if not daily_dish.is_running():
         daily_dish.start()
 
-bot.run(os.getenv("BOT_TOKEN"))
+bot.run(os.getenv(BOT_TOKEN))
