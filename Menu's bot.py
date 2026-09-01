@@ -1,38 +1,24 @@
-import os
-import json
-import random
-from datetime import time
-
 import discord
 from discord.ext import commands, tasks
-from dotenv import load_dotenv
+import json, random
+from datetime import datetime, time
 
-load_dotenv()
-
-TOKEN = os.environ["DISCORD_TOKEN"]
-CHANNEL_ID = int(os.environ["CHANNEL_ID"])
-
-DISHES_PATH = "dishes.json"
-HISTORY_PATH = "history.json"
-HISTORY_KEEP = 20  # 直近何件を履歴として保持するか
+CHANNEL_ID = 1544438399505793064 # 投稿先チャンネルID
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
-
 
 def load_json(path):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-
 def pick_dish():
-    dishes = load_json(DISHES_PATH)
-    history = load_json(HISTORY_PATH)
+    dishes = load_json("dishes.json")
+    history = load_json("history.json")  # 直近出した name のリスト
 
     candidates = [d for d in dishes if d["name"] not in history]
     if not candidates:  # 全部出し切ったらリセット
@@ -41,27 +27,19 @@ def pick_dish():
 
     dish = random.choice(candidates)
     history.append(dish["name"])
-    save_json(HISTORY_PATH, history[-HISTORY_KEEP:])
+    save_json("history.json", history[-20:])  # 直近20件だけ保持
     return dish
 
-
-def build_embed(dish):
-    return discord.Embed(
-        title=f"🍽 今日の料理: {dish['name']}",
-        description=f"{dish['country']}（{dish['region']}）の料理です。",
-        color=discord.Color.orange(),
-    )
-
-
-@tasks.loop(time=time(hour=0, minute=0))  # UTC 0:00 = JST 9:00
+@tasks.loop(time=time(hour=9, minute=0))  # 毎日9:00 (サーバーのタイムゾーン基準)
 async def daily_dish():
     channel = bot.get_channel(CHANNEL_ID)
-    if channel is None:
-        print(f"チャンネルが見つかりません: {CHANNEL_ID}")
-        return
     dish = pick_dish()
-    await channel.send(embed=build_embed(dish))
-
+    embed = discord.Embed(
+        title=f"🍽 今日の料理: {dish['name']}",
+        description=f"{dish['country']}（{dish['region']}）の料理です。",
+        color=discord.Color.orange()
+    )
+    await channel.send(embed=embed)
 
 @bot.event
 async def on_ready():
@@ -69,12 +47,4 @@ async def on_ready():
     if not daily_dish.is_running():
         daily_dish.start()
 
-
-@bot.command()
-async def dish(ctx):
-    """手動で今日の一品を試す用コマンド"""
-    d = pick_dish()
-    await ctx.send(embed=build_embed(d))
-
-
-bot.run(TOKEN)
+bot.run("BOT_TOKEN")
