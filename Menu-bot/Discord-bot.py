@@ -31,7 +31,7 @@ def pick_dish():
     save_json("history.json", history[-20:])  # 直近20件だけ保持
     return dish
 
-@tasks.loop(time=time(hour=12, minute=10))  # 毎日9:00 (サーバーのタイムゾーン基準)
+@tasks.loop(time=time(hour=12, minute=37))  # 毎日9:00 (サーバーのタイムゾーン基準)
 async def daily_dish():
     channel = bot.get_channel(CHANNEL_ID)
     dish = pick_dish()
