@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 import json, random
 from datetime import datetime, time
 
-CHANNEL_ID = 1544438400671817741 # 投稿先チャンネルID
+CHANNEL_ID = 1544438806864986212 # 投稿先チャンネルID
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
