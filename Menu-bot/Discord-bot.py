@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 import json, random
 from datetime import datetime, time
 
-CHANNEL_ID = 1544438806864986212 # 投稿先チャンネルID
+CHANNEL_ID = 1545597214943084654 # 投稿先チャンネルID
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
@@ -45,16 +45,6 @@ async def daily_dish():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
-    channel = bot.get_channel(CHANNEL_ID)
-    print(f"Channel found: {channel}")  # ← これも重要
-    dish = pick_dish()
-    embed = discord.Embed(
-        title=f"🍽 今日の料理: {dish['name']}",
-        description=f"{dish['country']}（{dish['region']}）の料理です。",
-        color=discord.Color.orange()
-    )
-    await channel.send(embed=embed)
-
     if not daily_dish.is_running():
         daily_dish.start()
 
